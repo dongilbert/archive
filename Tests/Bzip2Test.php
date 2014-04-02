@@ -75,38 +75,6 @@ class Bzip2Test extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * Tests the extract Method.
-	 *
-	 * @group   JArchive
-	 * @return  Joomla\Archive\Bzip2::extract
-	 */
-	public function testExtractWithStreams()
-	{
-		if (!\Joomla\Archive\Bzip2::isSupported())
-		{
-			$this->markTestSkipped('Bzip2 files can not be extracted.');
-
-			return;
-		}
-
-		try
-		{
-			$this->object->extract(__DIR__ . '/logo.bz2', self::$outputPath . '/logo-bz2.png', array('use_streams' => true));
-		}
-		catch (\RuntimeException $e)
-		{
-			$this->assertTrue(is_file(self::$outputPath . '/logo-bz2.png'));
-		}
-
-		$this->assertTrue(is_file(self::$outputPath . '/logo-bz2.png'));
-
-		if (is_file(self::$outputPath . '/logo-bz2.png'))
-		{
-			unlink(self::$outputPath . '/logo-bz2.png');
-		}
-	}
-
-	/**
 	 * Tests the isSupported Method.
 	 *
 	 * @group   JArchive

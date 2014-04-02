@@ -26,7 +26,7 @@ class ZipTest extends \PHPUnit_Framework_TestCase
 	protected static $outputPath;
 
 	/**
-	 * @var Joomla\Archive\Zip
+	 * @var \Joomla\Archive\Zip
 	 */
 	protected $object;
 

@@ -8,9 +8,6 @@
 
 namespace Joomla\Archive;
 
-use Joomla\Filesystem\File;
-use Joomla\Filesystem\Folder;
-
 /**
  * An Archive handling class
  *
@@ -58,6 +55,7 @@ class Archive
 	 * @return  boolean  True for success
 	 *
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 * @throws  \InvalidArgumentException
 	 */
 	public function extract($archivename, $extractdir)
@@ -96,8 +94,13 @@ class Archive
 				}
 				else
 				{
-					Folder::create($path);
-					$result = File::copy($tmpfname, $extractdir, null, 0);
+					// If the destination directory doesn't exist we need to create it
+					if (file_exists($path) === false && mkdir($path, 0755, true) === false)
+					{
+						throw new \RuntimeException('Destination directory does not exist and could not be created.');
+					}
+
+					$result = copy($tmpfname, $extractdir . '/' . $filename);
 				}
 
 				@unlink($tmpfname);
@@ -124,8 +127,13 @@ class Archive
 				}
 				else
 				{
-					Folder::create($path);
-					$result = File::copy($tmpfname, $extractdir, null, 0);
+					// If the destination directory doesn't exist we need to create it
+					if (file_exists($path) === false && mkdir($path, 0755, true) === false)
+					{
+						throw new \RuntimeException('Destination directory does not exist and could not be created.');
+					}
+
+					$result = copy($tmpfname, $extractdir . '/' . $filename);
 				}
 
 				@unlink($tmpfname);
@@ -197,7 +205,7 @@ class Archive
 			/* @var  ExtractableInterface  $class */
 			$class = 'Joomla\\Archive\\' . ucfirst($type);
 
-			if (!class_exists($class) || !$class::isSupported())
+			if (! class_exists($class) || ! $class::isSupported())
 			{
 				throw new \InvalidArgumentException(
 					sprintf(

@@ -24,7 +24,7 @@ class GzipTest extends \PHPUnit_Framework_TestCase
 	protected static $outputPath;
 
 	/**
-	 * @var Joomla\Archive\Gzip
+	 * @var \Joomla\Archive\Gzip
 	 */
 	protected $object;
 
@@ -66,41 +66,6 @@ class GzipTest extends \PHPUnit_Framework_TestCase
 		}
 
 		$this->object->extract(__DIR__ . '/logo.gz', self::$outputPath . '/logo-gz.png');
-		$this->assertTrue(is_file(self::$outputPath . '/logo-gz.png'));
-
-		if (is_file(self::$outputPath . '/logo-gz.png'))
-		{
-			unlink(self::$outputPath . '/logo-gz.png');
-		}
-	}
-
-	/**
-	 * Tests the extract Method.
-	 *
-	 * @group   JArchive
-	 * @return  void
-	 *
-	 * @covers  Joomla\Archive\Gzip::extract
-	 * @covers  Joomla\Archive\Gzip::getFilePosition
-	 */
-	public function testExtractWithStreams()
-	{
-		if (!ArchiveGzip::isSupported())
-		{
-			$this->markTestSkipped('Gzip files can not be extracted.');
-
-			return;
-		}
-
-		try
-		{
-			$this->object->extract(__DIR__ . '/logo.gz', self::$outputPath . '/logo-gz.png', array('use_streams' => true));
-		}
-		catch (\RuntimeException $e)
-		{
-			$this->assertTrue(is_file(self::$outputPath . '/logo-gz.png'));
-		}
-
 		$this->assertTrue(is_file(self::$outputPath . '/logo-gz.png'));
 
 		if (is_file(self::$outputPath . '/logo-gz.png'))

@@ -8,9 +8,6 @@
 
 namespace Joomla\Archive;
 
-use Joomla\Filesystem\File;
-use Joomla\Filesystem\Stream;
-
 /**
  * Bzip2 format adapter for the Archive package
  *
@@ -56,75 +53,35 @@ class Bzip2 implements ExtractableInterface
 	 *
 	 * @since   1.0
 	 * @throws  \RuntimeException
+	 * @todo    Add support for PHP Streams
 	 */
 	public function extract($archive, $destination)
 	{
-		$this->data = null;
+		$this->data = file_get_contents($archive);
 
-		if (!isset($this->options['use_streams']) || $this->options['use_streams'] == false)
+		if (!$this->data)
 		{
-			// Old style: read the whole file and then parse it
-			$this->data = file_get_contents($archive);
-
-			if (!$this->data)
-			{
-				throw new \RuntimeException('Unable to read archive');
-			}
-
-			$buffer = bzdecompress($this->data);
-			unset($this->data);
-
-			if (empty($buffer))
-			{
-				throw new \RuntimeException('Unable to decompress data');
-			}
-
-			if (File::write($destination, $buffer) === false)
-			{
-				throw new \RuntimeException('Unable to write archive');
-			}
+			throw new \RuntimeException('Unable to read archive');
 		}
-		else
+
+		$buffer = bzdecompress($this->data);
+		unset($this->data);
+
+		if (empty($buffer))
 		{
-			// New style! streams!
-			$input = Stream::getStream();
+			throw new \RuntimeException('Unable to decompress data');
+		}
 
-			// Use bzip
-			$input->set('processingmethod', 'bz');
+		// If the destination directory doesn't exist we need to create it
+		if (file_exists(dirname($destination)) === false && mkdir(dirname($destination), 0755, true) === false)
+		{
+			throw new \RuntimeException('Destination directory does not exist and could not be created.');
+		}
 
-			if (!$input->open($archive))
-			{
-				throw new \RuntimeException('Unable to read archive (bz2)');
-			}
-
-			$output = Stream::getStream();
-
-			if (!$output->open($destination, 'w'))
-			{
-				$input->close();
-
-				throw new \RuntimeException('Unable to write archive (bz2)');
-			}
-
-			do
-			{
-				$this->data = $input->read($input->get('chunksize', 8196));
-
-				if ($this->data)
-				{
-					if (!$output->write($this->data))
-					{
-						$input->close();
-
-						throw new \RuntimeException('Unable to write archive (bz2)');
-					}
-				}
-			}
-
-			while ($this->data);
-
-			$output->close();
-			$input->close();
+		// Write out the file
+		if (file_put_contents($destination, $buffer) === false)
+		{
+			throw new \RuntimeException('Unable to write archive to destination.');
 		}
 
 		return true;

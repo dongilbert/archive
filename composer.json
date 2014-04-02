@@ -2,12 +2,11 @@
     "name": "joomla/archive",
     "type": "joomla-package",
     "description": "Joomla Archive Package",
-    "keywords": ["joomla", "framework", "archive"],
+    "keywords": ["joomla", "framework", "archive", "zip", "unzip", "gzip", "tar", "bzip2", "extract"],
     "homepage": "https://github.com/joomla-framework/archive",
     "license": "GPL-2.0+",
     "require": {
-        "php": ">=5.3.10",
-        "joomla/filesystem": "~1.0"
+        "php": ">=5.3.10"
     },
     "autoload": {
     	"psr-4": {

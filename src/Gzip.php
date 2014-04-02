@@ -70,74 +70,35 @@ class Gzip implements ExtractableInterface
 	 *
 	 * @since   1.0
 	 * @throws  \RuntimeException
+	 * @todo    Add support for PHP Streams
 	 */
 	public function extract($archive, $destination)
 	{
-		$this->data = null;
+		$this->data = file_get_contents($archive);
 
-		if (!isset($this->options['use_streams']) || $this->options['use_streams'] == false)
+		if (!$this->data)
 		{
-			$this->data = file_get_contents($archive);
-
-			if (!$this->data)
-			{
-				throw new \RuntimeException('Unable to read archive');
-			}
-
-			$position = $this->getFilePosition();
-			$buffer = gzinflate(substr($this->data, $position, strlen($this->data) - $position));
-
-			if (empty($buffer))
-			{
-				throw new \RuntimeException('Unable to decompress data');
-			}
-
-			if (File::write($destination, $buffer) === false)
-			{
-				throw new \RuntimeException('Unable to write archive');
-			}
+			throw new \RuntimeException('Unable to read archive');
 		}
-		else
+
+		$position = $this->getFilePosition();
+		$buffer = gzinflate(substr($this->data, $position, strlen($this->data) - $position));
+
+		if (empty($buffer))
 		{
-			// New style! streams!
-			$input = Stream::getStream();
+			throw new \RuntimeException('Unable to decompress data');
+		}
 
-			// Use gz
-			$input->set('processingmethod', 'gz');
+		// If the destination directory doesn't exist we need to create it
+		if (file_exists(dirname($destination)) === false && mkdir(dirname($destination), 0755, true) === false)
+		{
+			throw new \RuntimeException('Destination directory does not exist and could not be created.');
+		}
 
-			if (!$input->open($archive))
-			{
-				throw new \RuntimeException('Unable to read archive (gz)');
-			}
-
-			$output = Stream::getStream();
-
-			if (!$output->open($destination, 'w'))
-			{
-				$input->close();
-
-				throw new \RuntimeException('Unable to write archive (gz)');
-			}
-
-			do
-			{
-				$this->data = $input->read($input->get('chunksize', 8196));
-
-				if ($this->data)
-				{
-					if (!$output->write($this->data))
-					{
-						$input->close();
-
-						throw new \RuntimeException('Unable to write file (gz)');
-					}
-				}
-			}
-
-			while ($this->data);
-
-			$output->close();
-			$input->close();
+		// Write out the file
+		if (file_put_contents($destination, $buffer) === false)
+		{
+			throw new \RuntimeException('Unable to write archive to destination.');
 		}
 
 		return true;

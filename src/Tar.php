@@ -8,10 +8,6 @@
 
 namespace Joomla\Archive;
 
-use Joomla\Filesystem\Path;
-use Joomla\Filesystem\File;
-use Joomla\Filesystem\Folder;
-
 /**
  * Tar format adapter for the Archive package
  *
@@ -110,17 +106,18 @@ class Tar implements ExtractableInterface
 			if ($type == 'file' || $type == 'unix file')
 			{
 				$buffer = $this->metadata[$i]['data'];
-				$path = Path::clean($destination . '/' . $this->metadata[$i]['name']);
+				$path = $destination . '/' . $this->metadata[$i]['name'];
 
-				// Make sure the destination folder exists
-				if (!Folder::create(dirname($path)))
+				// If the destination directory doesn't exist we need to create it
+				if (file_exists(dirname($path)) === false && mkdir(dirname($path), 0755, true) === false)
 				{
-					throw new \RuntimeException('Unable to create destination');
+					throw new \RuntimeException('Destination directory does not exist and could not be created.');
 				}
 
-				if (File::write($path, $buffer) === false)
+				// Write out the file
+				if (file_put_contents($path, $buffer) === false)
 				{
-					throw new \RuntimeException('Unable to write entry');
+					throw new \RuntimeException('Unable to write archive to destination.');
 				}
 			}
 		}

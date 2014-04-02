@@ -8,10 +8,6 @@
 
 namespace Joomla\Archive;
 
-use Joomla\Filesystem\File;
-use Joomla\Filesystem\Path;
-use Joomla\Filesystem\Folder;
-
 /**
  * ZIP format adapter for the Archive package
  *
@@ -245,17 +241,18 @@ class Zip implements ExtractableInterface
 			if ($lastPathCharacter !== '/' && $lastPathCharacter !== '\\')
 			{
 				$buffer = $this->getFileData($i);
-				$path = Path::clean($destination . '/' . $this->metadata[$i]['name']);
+				$path = $destination . '/' . $this->metadata[$i]['name'];
 
-				// Make sure the destination folder exists
-				if (!Folder::create(dirname($path)))
+				// If the destination directory doesn't exist we need to create it
+				if (file_exists(dirname($path)) === false && mkdir(dirname($path), 0755, true) === false)
 				{
-					throw new \RuntimeException('Unable to create destination');
+					throw new \RuntimeException('Destination directory does not exist and could not be created.');
 				}
 
-				if (File::write($path, $buffer) === false)
+				// Write out the file
+				if (file_put_contents($path, $buffer) === false)
 				{
-					throw new \RuntimeException('Unable to write entry');
+					throw new \RuntimeException('Unable to write archive to destination.');
 				}
 			}
 		}
@@ -280,10 +277,10 @@ class Zip implements ExtractableInterface
 
 		if (is_resource($zip))
 		{
-			// Make sure the destination folder exists
-			if (!Folder::create($destination))
+			// If the destination directory doesn't exist we need to create it
+			if (file_exists($destination) === false && mkdir($destination, 0755, true) === false)
 			{
-				throw new \RuntimeException('Unable to create destination');
+				throw new \RuntimeException('Destination directory does not exist and could not be created.');
 			}
 
 			// Read files in the archive
@@ -294,10 +291,12 @@ class Zip implements ExtractableInterface
 					if (substr(zip_entry_name($file), strlen(zip_entry_name($file)) - 1) != "/")
 					{
 						$buffer = zip_entry_read($file, zip_entry_filesize($file));
+						$path = $destination . '/' . zip_entry_name($file);
 
-						if (File::write($destination . '/' . zip_entry_name($file), $buffer) === false)
+						// Write out the file
+						if (file_put_contents($path, $buffer) === false)
 						{
-							throw new \RuntimeException('Unable to write entry');
+							throw new \RuntimeException('Unable to write entry.');
 						}
 
 						zip_entry_close($file);
@@ -634,13 +633,18 @@ class Zip implements ExtractableInterface
 		pack('V', strlen($data)) . /* ZIP file comment length. */
 		"\x00\x00";
 
-		if (File::write($path, $buffer) === false)
+		// If the destination directory doesn't exist we need to create it
+		if (file_exists(dirname($path)) === false && mkdir(dirname($path), 0755, true) === false)
 		{
 			return false;
 		}
-		else
+
+		// Write out the file
+		if (file_put_contents($path, $buffer) === false)
 		{
-			return true;
+			return false;
 		}
+
+		return true;
 	}
 }

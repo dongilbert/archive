@@ -155,7 +155,7 @@ class ArchiveTest extends \PHPUnit_Framework_TestCase
 			return;
 		}
 
-		$this->fixture->extract(__DIR__ . '/logo.gz', $this->outputPath . '/logo-gz.png');
+		$this->fixture->extract(__DIR__ . '/logo.gz', $this->outputPath);
 		$this->assertTrue(is_file($this->outputPath . '/logo-gz.png'));
 
 		if (is_file($this->outputPath . '/logo-gz.png'))
@@ -195,7 +195,7 @@ class ArchiveTest extends \PHPUnit_Framework_TestCase
 			return;
 		}
 
-		$this->fixture->extract(__DIR__ . '/logo.bz2', $this->outputPath . '/logo-bz2.png');
+		$this->fixture->extract(__DIR__ . '/logo.bz2', $this->outputPath);
 		$this->assertTrue(is_file($this->outputPath . '/logo-bz2.png'));
 
 		if (is_file($this->outputPath . '/logo-bz2.png'))
